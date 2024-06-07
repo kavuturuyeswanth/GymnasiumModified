@@ -70,3 +70,4 @@ from gymnasium.wrappers.time_limit import TimeLimit
 from gymnasium.wrappers.transform_observation import TransformObservation
 from gymnasium.wrappers.transform_reward import TransformReward
 from gymnasium.wrappers.vector_list_info import VectorListInfo
+from gymnasium.wrappers.dict import FlattenDictWrapper
