@@ -78,9 +78,7 @@ class Env(Generic[ObsType, ActType]):
     # Created
     _np_random: np.random.Generator | None = None
 
-    def step(
-        self, action: ActType
-    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(self, action: ActType, goal: ActType) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         """Run one timestep of the environment's dynamics using the agent actions.
 
         When the end of an episode is reached (``terminated or truncated``), it is necessary to call :meth:`reset` to
@@ -382,9 +380,7 @@ class Wrapper(
         return cls.__name__
 
     @property
-    def action_space(
-        self,
-    ) -> spaces.Space[ActType] | spaces.Space[WrapperActType]:
+    def action_space(self,) -> spaces.Space[ActType] | spaces.Space[WrapperActType]:
         """Return the :attr:`Env` :attr:`action_space` unless overwritten then the wrapper :attr:`action_space` is used."""
         if self._action_space is None:
             return self.env.action_space
@@ -454,11 +450,9 @@ class Wrapper(
             "Can't access `_np_random` of a wrapper, use `.unwrapped._np_random` or `.np_random`."
         )
 
-    def step(
-        self, action: WrapperActType
-    ) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(self, action: WrapperActType, goal:WrapperActType) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         """Uses the :meth:`step` of the :attr:`env` that can be overwritten to change the returned data."""
-        return self.env.step(action)
+        return self.env.step(action, goal)
 
     def reset(
         self, *, seed: int | None = None, options: dict[str, Any] | None = None
@@ -515,11 +509,9 @@ class ObservationWrapper(Wrapper[WrapperObsType, ActType, ObsType, ActType]):
         obs, info = self.env.reset(seed=seed, options=options)
         return self.observation(obs), info
 
-    def step(
-        self, action: ActType
-    ) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(self, action: ActType, goal: ActType) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         """Modifies the :attr:`env` after calling :meth:`step` using :meth:`self.observation` on the returned observations."""
-        observation, reward, terminated, truncated, info = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action, goal)
         return self.observation(observation), reward, terminated, truncated, info
 
     def observation(self, observation: ObsType) -> WrapperObsType:
@@ -548,11 +540,9 @@ class RewardWrapper(Wrapper[ObsType, ActType, ObsType, ActType]):
         """Constructor for the Reward wrapper."""
         Wrapper.__init__(self, env)
 
-    def step(
-        self, action: ActType
-    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(self, action: ActType, goal: ActType) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         """Modifies the :attr:`env` :meth:`step` reward using :meth:`self.reward`."""
-        observation, reward, terminated, truncated, info = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action, goal)
         return observation, self.reward(reward), terminated, truncated, info
 
     def reward(self, reward: SupportsFloat) -> SupportsFloat:
@@ -584,11 +574,9 @@ class ActionWrapper(Wrapper[ObsType, WrapperActType, ObsType, ActType]):
         """Constructor for the action wrapper."""
         Wrapper.__init__(self, env)
 
-    def step(
-        self, action: WrapperActType
-    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+    def step(self, action: WrapperActType, goal: WrapperActType) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         """Runs the :attr:`env` :meth:`env.step` using the modified ``action`` from :meth:`self.action`."""
-        return self.env.step(self.action(action))
+        return self.env.step(self.action(action,goal))
 
     def action(self, action: WrapperActType) -> ActType:
         """Returns a modified action before :meth:`env.step` is called.
