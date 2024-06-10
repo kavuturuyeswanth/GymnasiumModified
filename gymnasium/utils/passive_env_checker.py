@@ -202,10 +202,10 @@ def env_reset_passive_checker(env, **kwargs):
     return result
 
 
-def env_step_passive_checker(env, action):
+def env_step_passive_checker(env, action, goal):
     """A passive check for the environment step, investigating the returning data then returning the data unchanged."""
     # We don't check the action as for some environments then out-of-bounds values can be given
-    result = env.step(action)
+    result = env.step(action, goal)
     assert isinstance(
         result, tuple
     ), f"Expects step result to be a tuple, actual type: {type(result)}"
