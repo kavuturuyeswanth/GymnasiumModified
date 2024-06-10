@@ -49,11 +49,11 @@ class OrderEnforcing(gym.Wrapper, gym.utils.RecordConstructorArgs):
         self._has_reset: bool = False
         self._disable_render_order_enforcing: bool = disable_render_order_enforcing
 
-    def step(self, action):
+    def step(self, action, goal):
         """Steps through the environment with `kwargs`."""
         if not self._has_reset:
             raise ResetNeeded("Cannot call env.step() before calling env.reset()")
-        return self.env.step(action)
+        return self.env.step(action, goal)
 
     def reset(self, **kwargs):
         """Resets the environment with `kwargs`."""
